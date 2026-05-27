@@ -1,6 +1,6 @@
 {"name":"Fitnes Tracker",
 "short_name":"Fitnes app",
-"start_url":"./TreningTracker/index.html",
+"start_url":"./index.html",
 "scope": "./TreningTracker/",
 "display":"standalone",
 "orientation":"portrait",
