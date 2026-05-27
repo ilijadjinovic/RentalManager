@@ -453,10 +453,10 @@ function rSched(){
     var cu='https://calendar.google.com/calendar/render?action=TEMPLATE&text=Trening&dates='+ds+'/'+de+'&recur=RRULE:FREQ=WEEKLY;BYDAY='+bd+'&details=Trening+po+rasporedu';
     h+='<a class="callink" href="'+cu+'" target="_blank">📅 Dodaj u Google Calendar (nedeljno)</a>';
   }
-  h+='<div class="card" style="margin-top:14px"><div class="clbl">Backup podataka</div>';
-  h+='<button class="btn btg" style="margin-top:0" onclick="expData()">⬇️ Snimi podatke</button>';
-  h+='<label class="btn btb" style="margin-top:8px;cursor:pointer">⬆️ Učitaj podatke<input type="file" accept=".json" onchange="impData(event)" style="display:none"/></label>';
-  h+='<div style="font-size:11px;color:var(--tx3);line-height:1.6;margin-top:8px">Snimi sve podatke kao JSON fajl. Učitaj na drugom uređaju ili browseru.</div></div>';
+  //h+='<div class="card" style="margin-top:14px"><div class="clbl">Backup podataka</div>';
+  //h+='<button class="btn btg" style="margin-top:0" onclick="expData()">⬇️ Snimi podatke</button>';
+  //h+='<label class="btn btb" style="margin-top:8px;cursor:pointer">⬆️ Učitaj podatke<input type="file" accept=".json" onchange="impData(event)" style="display:none"/></label>';
+  //h+='<div style="font-size:11px;color:var(--tx3);line-height:1.6;margin-top:8px">Snimi sve podatke kao JSON fajl. Učitaj na drugom uređaju ili browseru.</div></div>';
   h+='<div class="card" style="margin-top:14px"><div class="clbl">Moje vežbe</div>';
   S.exercises.forEach(function(e,i){
     h+='<div class="li"><div><div style="font-size:13px;font-weight:600">'+e.name+'</div><div style="font-size:11px;color:var(--tx3)">'+e.part+'</div></div>';
@@ -769,6 +769,11 @@ function rProf(){
   }else{
     h+='<div class="empty">Unesi godine, visinu i težinu<br>da vidiš BMI i procenu kalorija.</div>';
   }
+  h+='<div class="card" style="margin-top:14px"><div class="clbl">Backup podataka</div>';
+  h+='<button class="btn btg" style="margin-top:0" onclick="expData()">⬇️ Snimi podatke</button>';
+  h+='<label class="btn btb" style="margin-top:8px;cursor:pointer">⬆️ Učitaj podatke<input type="file" accept=".json" onchange="impData(event)" style="display:none"/></label>';
+  h+='<div style="font-size:11px;color:var(--tx3);line-height:1.6;margin-top:8px">Snimi sve podatke kao JSON fajl. Učitaj na drugom uređaju ili browseru.</div></div>';
+  
   set('s-prof',h);
 }
 function upP(f,v){S.profile[f]=v;save();}
