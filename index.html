@@ -269,7 +269,7 @@ function mTot(items){
   return items.reduce(function(a,it){
     var fd=S.foods.find(function(f){return f.id===it.fid});
     if(!fd)return a;
-    var r=it.amt/100;
+    var r=(fd.unit==='kom')?it.amt:it.amt/100;
     return{k:a.k+fd.k*r,p:a.p+fd.p*r,c:a.c+fd.c*r,f:a.f+fd.f*r};
   },{k:0,p:0,c:0,f:0});
 }
@@ -695,7 +695,7 @@ function rNutr(){
     items.forEach(function(it,ii){
       var fd=S.foods.find(function(f){return f.id===it.fid});
       if(!fd)return;
-      var r=it.amt/100;
+      var r=(fd.unit==='kom')?it.amt:it.amt/100;
       h+='<div class="frow"><div><div style="font-size:13px;font-weight:500">'+fd.name+'</div>';
       h+='<div style="font-size:11px;color:var(--tx3)">'+it.amt+fd.unit+' · P:'+(fd.p*r).toFixed(1)+'g · UH:'+(fd.c*r).toFixed(1)+'g · M:'+(fd.f*r).toFixed(1)+'g · '+Math.round(fd.k*r)+'kcal</div></div>';
       h+='<button onclick="rmFI(\''+nutrDate+'\',\''+m.id+'\','+ii+')" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:20px;padding:0;width:auto">×</button></div>';
