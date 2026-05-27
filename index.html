@@ -228,10 +228,37 @@ function bmr(){
   return Math.round(10*w+6.25*h-5*a+5);
 }
 function sKcal(ex){
+  // Precizna formula: mehanicki rad + metabolicki trosak odmora
+  // Energia = tezina * amplituda * g / efikasnost misica
+  // + bazalni trosak (disanje, srce) tokom odmora izmedju serija
   if(!ex.sets||!ex.sets.length)return 0;
-  var w=parseFloat(S.profile.weight)||75,avg=ex.sets.reduce(function(a,s){return a+s.weight},0)/ex.sets.length;
-  var MET=avg>50?6:avg>20?5:4;
-  return Math.round(MET*(w*3.5/200)*ex.sets.length*2.5);
+  var bw=parseFloat(S.profile.weight)||75;
+  var gender=S.profile.gender||'m';
+  // Amplituda pokreta ~0.45m prosecno (razlicita za razlicite vezbe)
+  var amp=0.45;
+  // Efikasnost misica ~25% (75% se gubi kao toplota)
+  var eff=0.25;
+  // Ekscentricna faza dodaje ~30% od koncentricne
+  var eccFactor=1.3;
+  var totalKcal=0;
+  ex.sets.forEach(function(s){
+    var load=s.w||0;
+    var reps=s.r||0;
+    if(load===0){
+      // Vežba sa sopstvenom težinom - koristi telesnu masu
+      load=bw*0.65;
+    }
+    // Mehanicki rad po seriji (Joule) -> kcal
+    // W = load(kg) * g(9.81) * amp(m) * reps * eccFactor
+    var joules=load*9.81*amp*reps*eccFactor;
+    var kcalMech=joules/(4184*eff); // 4184 J = 1 kcal
+    // Bazalni trosak tokom serije i odmora (~2.5 min po seriji)
+    // BMR po minuti * faktor aktivnosti
+    var bmrPerMin=(10*bw+6.25*(parseFloat(S.profile.height)||175)-5*(parseFloat(S.profile.age)||30)+(gender==='m'?5:-161))/(24*60);
+    var restKcal=bmrPerMin*2.5*3; // 3x BMR tokom odmora
+    totalKcal+=kcalMech+restKcal;
+  });
+  return Math.round(totalKcal);
 }
 function kKcal(dur,man){
   if(man&&man>0)return man;
@@ -352,7 +379,9 @@ function rLog(){
         h+='<button onclick="rmSet('+ei+','+si+')" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:16px;text-align:center;width:auto;padding:0">×</button></div>';
       });
       var kc=sKcal(ex),vol=ex.sets.reduce(function(a,s){return a+s.r*s.w},0);
-      h+='<div class="calbdg">🔥 ~'+kc+' kcal · Volumen: '+vol+' kg</div>';
+      var avgW=ex.sets.length?Math.round(ex.sets.reduce(function(a,s){return a+s.w},0)/ex.sets.length):0;
+      var totR=ex.sets.reduce(function(a,s){return a+s.r},0);
+      h+='<div class="calbdg">🔥 ~'+kc+' kcal spaljeno &nbsp;·&nbsp; '+totR+' ukupno pon. &nbsp;·&nbsp; Volumen: '+vol+' kg</div>';
     }
     h+='</div>';
   });
@@ -477,7 +506,16 @@ function rHist(){
           h+='</div></div>';
         }
       });
-      if(w.note)h+='<div style="font-size:13px;color:var(--tx2);font-style:italic;margin-top:6px">"'+w.note+'"</div>';
+      // Ukupno kalorije za ceo trening
+      var totalKcal=w.exercises.reduce(function(a,ex){
+        if(ex.type==='k'){return a+kKcal(ex.dur||0,ex.kcal||0);}
+        return a+sKcal(ex);
+      },0);
+      h+='<div style="margin-top:10px;padding:10px 12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:8px;display:flex;justify-content:space-between;align-items:center">';
+      h+='<span style="font-size:13px;font-weight:600;color:var(--amb)">🔥 Ukupno spaljeno</span>';
+      h+='<span style="font-size:16px;font-weight:700;color:var(--amb)">'+totalKcal+' kcal</span>';
+      h+='</div>';
+      if(w.note)h+='<div style="font-size:13px;color:var(--tx2);font-style:italic;margin-top:8px">"'+w.note+'"</div>';
       h+='</div>';
     });
   }
