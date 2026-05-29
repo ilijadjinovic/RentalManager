@@ -1,5 +1,5 @@
-{"name":"Fitnes Tracker",
-"short_name":"Fitnes app",
+{"name":"Fitness Tracker",
+"short_name":"Fitness app",
 "start_url":"./index.html",
 "scope": "./TreningTracker/",
 "display":"standalone",
