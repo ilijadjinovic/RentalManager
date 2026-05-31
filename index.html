@@ -86,8 +86,6 @@ textarea{resize:none}
 .li:last-child{border-bottom:none}
 .empty{text-align:center;padding:28px 16px;color:var(--tx3);font-size:14px;line-height:1.8}
 .callink{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:8px;color:var(--accL);font-size:13px;font-weight:500;text-decoration:none;margin-top:10px}
-.pdf-fab{position:fixed;top:16px;right:16px;z-index:90;background:var(--acc);border:none;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);color:#fff;font-size:18px}
-.pdf-fab:active{opacity:.8}
 .rmodwrap{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:150;display:flex;flex-direction:column;justify-content:flex-end}
 .rmodwrap.hide{display:none}
 .rmod{background:var(--bg2);border-radius:16px 16px 0 0;padding:20px 16px calc(28px + var(--sb));max-height:92dvh;overflow-y:auto}
@@ -102,8 +100,9 @@ textarea{resize:none}
 .period-btn{flex:1;padding:9px 4px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid var(--br2);background:var(--bg3);color:var(--tx2);cursor:pointer}
 .period-btn.on{background:rgba(59,130,246,.2);color:var(--accL);border-color:rgba(59,130,246,.4)}
 @media print{
-  body>*{display:none!important}
-  #pdfContent{display:block!important;color:#111;background:#fff;font-family:Arial,sans-serif;padding:24px;font-size:12px}
+  *{visibility:hidden}
+  #pdfContent,#pdfContent *{visibility:visible}
+  #pdfContent{display:block!important;position:fixed;top:0;left:0;width:100%;color:#111;background:#fff;font-family:Arial,sans-serif;padding:24px;font-size:12px}
   #pdfContent h1{font-size:20px;margin-bottom:4px}
   #pdfContent h2{font-size:16px;margin:18px 0 8px;border-bottom:2px solid #3b82f6;padding-bottom:4px;color:#1e40af}
   #pdfContent h3{font-size:13px;margin:12px 0 4px}
@@ -228,7 +227,6 @@ onAuthStateChanged(auth,async function(user){
   </nav>
   <div class="modwrap hide" id="modwrap"><div class="mod" id="mod"></div></div>
   <div class="toast" id="toast"></div>
-  <button class="pdf-fab" onclick="openPdfModal()" title="Generiši PDF izveštaj">📄</button>
   <div class="rmodwrap hide" id="rmodwrap">
     <div class="rmod">
       <div class="rmhnd"></div>
@@ -957,6 +955,11 @@ function rProf(){
   h+='<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;color:var(--tx3)">📞</span><a href="tel:+38162303303" style="font-size:13px;color:var(--tx2);text-decoration:none">+381(0)62303303</a></div>';
   h+='</div></div>';
 
+  h+='<div class="card" style="margin-top:14px"><div class="clbl">Izveštaji</div>';
+  h+='<button class="btn btp" style="margin-top:0" onclick="openPdfModal()">📄 Generiši PDF izveštaj</button>';
+  h+='<div style="font-size:11px;color:var(--tx3);margin-top:8px;line-height:1.6">Odaberi period i tabove — generiše se PDF za čuvanje ili štampanje.</div>';
+  h+='</div>';
+
   set('s-prof',h);
 }
 function upP(f,v){S.profile[f]=v;save();}
@@ -992,7 +995,15 @@ function impData(ev){
 var _rPeriod=7;
 var _rTabs={sched:false,hist:true,stats:true,nutr:false};
 
-function openPdfModal(){el('rmodwrap').classList.remove('hide');}
+function openPdfModal(){
+  // sync checkboxes with current state each time modal opens
+  Object.keys(_rTabs).forEach(function(t){
+    var el2=el('rtab-'+t);
+    if(!el2)return;
+    if(_rTabs[t]){el2.classList.add('sel');}else{el2.classList.remove('sel');}
+  });
+  el('rmodwrap').classList.remove('hide');
+}
 function closeRModal(){el('rmodwrap').classList.add('hide');}
 function selPeriod(btn){
   _rPeriod=btn.dataset.p==='all'?'all':parseInt(btn.dataset.p);
@@ -1002,7 +1013,7 @@ function selPeriod(btn){
 function togRTab(t){
   _rTabs[t]=!_rTabs[t];
   var el2=el('rtab-'+t);
-  if(_rTabs[t])el2.classList.add('sel');else el2.classList.remove('sel');
+  if(_rTabs[t]){el2.classList.add('sel');}else{el2.classList.remove('sel');}
 }
 
 function rFilteredWorkouts(){
