@@ -102,7 +102,7 @@ textarea{resize:none}
 @media print{
   *{visibility:hidden}
   #pdfContent,#pdfContent *{visibility:visible}
-  #pdfContent{display:block!important;position:fixed;top:0;left:0;width:100%;color:#111;background:#fff;font-family:Arial,sans-serif;padding:24px;font-size:12px}
+  #pdfContent{display:block!important;position:absolute!important;top:0!important;left:0!important;width:100%!important;min-height:auto;overflow:visible!important;color:#111;background:#fff;font-family:Arial,sans-serif;padding:24px;font-size:12px}
   #pdfContent h1{font-size:20px;margin-bottom:4px}
   #pdfContent h2{font-size:16px;margin:18px 0 8px;border-bottom:2px solid #3b82f6;padding-bottom:4px;color:#1e40af}
   #pdfContent h3{font-size:13px;margin:12px 0 4px}
@@ -118,6 +118,11 @@ textarea{resize:none}
   #pdfContent .pdf-bar-wrap{background:#e2e8f0;border-radius:3px;height:6px;margin-top:4px}
   #pdfContent .pdf-bar-fill{height:6px;border-radius:3px;background:#3b82f6}
   #pdfContent .no-break{page-break-inside:avoid}
+  
+  html,body{margin:0!important;padding:0!important;overflow:visible!important;height:auto!important;}
+  
+  #pdfContent .pdf-card{page-break-inside:avoid;}
+  #pdfContent h2{page-break-after:avoid;}
 }
 #pdfContent{display:none}
 </style>
