@@ -109,14 +109,17 @@ function switchContext(ctx) {
   } else {
     hideTab('dashboard');
     hideTab('finance');
-    showTab('units'); // zakupac vidi stanovi tab
+    showTab('units');
     document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
     document.getElementById('messages').classList.add('active');
     document.querySelector('.tab[data-tab="messages"]').classList.add('active');
     setupTenantMessages(currentUser);
     setupKvarView(currentUser);
-    setupTenantUnitSection(currentUser);
+    // Prikaži standardnu units listu (ne tenant sekciju)
+    document.getElementById('tenantUnitSection').hidden = true;
+    document.getElementById('unitsListView').hidden = false;
+    document.getElementById('unitDetailView').hidden = true;
   }
 }
 
@@ -214,11 +217,11 @@ onAuthStateChanged(auth, async user => {
     }
     setupKvarView(user);
   } else if (hasTenant) {
-    // Samo zakupac
+    // Zakupac bez vlastitih stanova — vidi Poruke + Stanovi (prazna lista + forma za dodavanje)
     currentContext = 'tenant';
     hideTab('dashboard');
-    hideTab('units');
     hideTab('finance');
+    showTab('units');
 
     document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
@@ -227,9 +230,11 @@ onAuthStateChanged(auth, async user => {
     setupTenantMessages(user);
     setupKvarView(user);
 
-    // Prikaži units tab zakupcu (sa tenant formom)
-    showTab('units');
-    setupTenantUnitSection(user);
+    // Prikaži admin units listu (prazna) sa formom za dodavanje
+    document.getElementById('tenantUnitSection').hidden = true;
+    document.getElementById('unitsListView').hidden = false;
+    document.getElementById('unitDetailView').hidden = true;
+    showOnboarding();
   } else {
     // Nov korisnik — nije ni landlord ni zakupac još
     showTab('dashboard');
