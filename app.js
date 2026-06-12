@@ -95,12 +95,11 @@ function switchContext(ctx) {
     showTab('dashboard');
     showTab('units');
     showTab('finance');
-    // Poruke tab ostaje vidljiv u oba konteksta
-    // Aktiviraj dashboard
+    // Ostani na Poruke tabu (dolazimo iz tenant konteksta)
     document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-    document.getElementById('dashboard').classList.add('active');
-    document.querySelector('.tab[data-tab="dashboard"]').classList.add('active');
+    document.getElementById('messages').classList.add('active');
+    document.querySelector('.tab[data-tab="messages"]').classList.add('active');
     loadUnits();
     setupAdminMessages(currentUser);
     setupFinance(currentUser.uid);
