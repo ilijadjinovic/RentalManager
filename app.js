@@ -88,6 +88,7 @@ document.getElementById('ctxTenantBtn').onclick   = () => { if (currentUser) swi
 
 function switchContext(ctx) {
   currentContext = ctx;
+  sessionStorage.setItem('rmContext', ctx);
   document.getElementById('ctxLandlordBtn').classList.toggle('active', ctx === 'landlord');
   document.getElementById('ctxTenantBtn').classList.toggle('active', ctx === 'tenant');
 
@@ -142,6 +143,7 @@ onAuthStateChanged(auth, async user => {
     ['dashboard', 'units', 'messages', 'finance'].forEach(id => hideTab(id));
     document.body.dataset.ctxSwitcher = 'false';
     document.getElementById('contextSwitcher').style.display = 'none';
+    sessionStorage.removeItem('rmContext');
     return;
   }
 
@@ -161,30 +163,54 @@ onAuthStateChanged(auth, async user => {
   showTab('messages');
 
   if (hasLandlord) {
-    // Defaultno landlord kontekst
-    currentContext = 'landlord';
-    document.getElementById('ctxLandlordBtn').classList.add('active');
-    document.getElementById('ctxTenantBtn').classList.remove('active');
+    // Defaultno landlord kontekst, osim ako je korisnik prethodno bio u tenant modu
+    const savedCtx = sessionStorage.getItem('rmContext');
+    const startAsTenant = hasTenant && savedCtx === 'tenant';
 
-    showTab('dashboard');
-    showTab('units');
-    showTab('finance');
-
-    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-
-    // Ako nema stanova (novi landlord) — prikaži units tab sa onboarding porukom
-    if (!isMasterAdmin && landlordSnap.empty) {
-      document.getElementById('units').classList.add('active');
-      document.querySelector('.tab[data-tab="units"]').classList.add('active');
-      showOnboarding();
-    } else {
-      document.getElementById('dashboard').classList.add('active');
-      document.querySelector('.tab[data-tab="dashboard"]').classList.add('active');
-      loadUnits();
+    if (startAsTenant) {
+      // Vrati u tenant kontekst
+      currentContext = 'tenant';
+      document.getElementById('ctxLandlordBtn').classList.remove('active');
+      document.getElementById('ctxTenantBtn').classList.add('active');
+      showTab('dashboard'); showTab('units'); showTab('finance');
+      hideTab('dashboard'); hideTab('finance');
+      showTab('units');
+      document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.getElementById('messages').classList.add('active');
+      document.querySelector('.tab[data-tab="messages"]').classList.add('active');
+      setupTenantMessages(user);
+      setupKvarView(user);
+      setupTenantUnitSection(user);
       setupAdminMessages(user);
       setupFinance(user.uid);
-      loadDashboard();
+    } else {
+      // Landlord kontekst (default)
+      currentContext = 'landlord';
+      sessionStorage.setItem('rmContext', 'landlord');
+      document.getElementById('ctxLandlordBtn').classList.add('active');
+      document.getElementById('ctxTenantBtn').classList.remove('active');
+
+      showTab('dashboard');
+      showTab('units');
+      showTab('finance');
+
+      document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+
+      // Ako nema stanova (novi landlord) — prikaži units tab sa onboarding porukom
+      if (!isMasterAdmin && landlordSnap.empty) {
+        document.getElementById('units').classList.add('active');
+        document.querySelector('.tab[data-tab="units"]').classList.add('active');
+        showOnboarding();
+      } else {
+        document.getElementById('dashboard').classList.add('active');
+        document.querySelector('.tab[data-tab="dashboard"]').classList.add('active');
+        loadUnits();
+        setupAdminMessages(user);
+        setupFinance(user.uid);
+        loadDashboard();
+      }
     }
     setupKvarView(user);
   } else if (hasTenant) {
@@ -790,9 +816,50 @@ async function setupTenantUnitSection(user) {
       `;
       formDiv.hidden = true;
     } else {
-      // Nema dodeljenog stana — prikaži formu
+      // Nema dodeljenog stana — prikaži formu za zahtev
       infoDiv.innerHTML = '';
       formDiv.hidden = false;
+    }
+
+    // Uvek prikaži opciju da korisnik postane landlord (doda vlastiti stan)
+    let becomeLandlordDiv = document.getElementById('becomeLandlordSection');
+    if (!becomeLandlordDiv) {
+      becomeLandlordDiv = document.createElement('div');
+      becomeLandlordDiv.id = 'becomeLandlordSection';
+      becomeLandlordDiv.style.marginTop = '16px';
+      becomeLandlordDiv.innerHTML = `
+        <div class="onboarding-msg">
+          <i class="ti ti-building-plus"></i>
+          <p>Imate vlastiti stan za izdavanje?</p>
+          <span>Možete dodati vlastiti stan i upravljati zakupcima.</span>
+          <button id="becomeLandlordBtn" class="btn-primary" style="margin-top:8px">
+            <i class="ti ti-plus"></i> Dodaj vlastiti stan
+          </button>
+        </div>
+      `;
+      section.appendChild(becomeLandlordDiv);
+      document.getElementById('becomeLandlordBtn').onclick = () => {
+        // Postavi korisnika kao landlorda i prikaži onboarding
+        currentContext = 'landlord';
+        sessionStorage.setItem('rmContext', 'landlord');
+        document.getElementById('ctxLandlordBtn')?.classList.add('active');
+        document.getElementById('ctxTenantBtn')?.classList.remove('active');
+        showTab('dashboard');
+        showTab('finance');
+        // Prikaži context switcher
+        document.body.dataset.ctxSwitcher = 'true';
+        // Sakrij tenant sekciju, prikaži admin listu sa onboarding formom
+        section.hidden = true;
+        document.getElementById('unitsListView').hidden = false;
+        document.getElementById('unitDetailView').hidden = true;
+        document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        document.getElementById('units').classList.add('active');
+        document.querySelector('.tab[data-tab="units"]').classList.add('active');
+        showOnboarding();
+        setupAdminMessages(currentUser);
+        setupFinance(currentUser.uid);
+      };
     }
   } catch(e) {
     infoDiv.innerHTML = '<p class="info-text">Greška pri učitavanju.</p>';
