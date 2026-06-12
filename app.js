@@ -162,6 +162,7 @@ onAuthStateChanged(auth, async user => {
   const hasLandlord = isMasterAdmin || !landlordSnap.empty;
   const hasTenant   = !tenantSnap.empty;
 
+  console.log('[RM] hasLandlord:', hasLandlord, '| hasTenant:', hasTenant, '| email:', user.email);
   showContextSwitcher(hasLandlord, hasTenant);
   showTab('messages');
 
